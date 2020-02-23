@@ -1,4 +1,4 @@
-# ecry
+# ecry (Event Create You)
 
 A new Flutter project.
 
