@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:lunar_calendar_converter/lunar_solar_converter.dart';
 
 enum typeCalendar { solar, lunar }
@@ -59,26 +58,26 @@ class ECRY {
   };
   Map<String, dynamic> findEventCreateYouInSolarCalendar(DateTime birthday, int randomIndex) {
     List<int> arrDayCounter = [];
-    DateTime fuckingDay = findFuckingDay(birthday, randomIndex);
+    DateTime fuckDay = findFuckDay(birthday, randomIndex);
     for (var event in EVENTS[typeCalendar.solar]) {
       List<String> strEvent = event[0].split("/");
       int day = int.parse(strEvent[0]), month = int.parse(strEvent[1]);
-      DateTime eventFuckingDay = DateTime(fuckingDay.year, month, day);
-      int diff = fuckingDay.difference(eventFuckingDay).inDays.abs();
+      DateTime eventFuckDay = DateTime(fuckDay.year, month, day);
+      int diff = fuckDay.difference(eventFuckDay).inDays.abs();
       arrDayCounter.add(diff);
     }
     int minDiff = arrDayCounter.reduce(min);
     int indexEventMinDiff = arrDayCounter.indexWhere((quantity) => quantity == minDiff);
-    print('''
-      birthday: '${birthday.day}-${birthday.month}-${birthday.year}'
-      fuckDay: '${fuckingDay.day}-${fuckingDay.month}-${fuckingDay.year}'
-      $arrDayCounter
-      minDiff: $minDiff
-      Event Name: ${EVENTS[typeCalendar.solar][indexEventMinDiff]})
-    ''');
+    // print('''
+    //   birthday: '${birthday.day}-${birthday.month}-${birthday.year}'
+    //   fuckDay: '${fuckDay.day}-${fuckDay.month}-${fuckDay.year}'
+    //   $arrDayCounter
+    //   minDiff: $minDiff
+    //   Event Name: ${EVENTS[typeCalendar.solar][indexEventMinDiff]})
+    // ''');
     return {
       "birthday": birthday,
-      "fuckDay": fuckingDay,
+      "fuckDay": fuckDay,
       "arrDayCounter": arrDayCounter,
       "minDiff": minDiff,
       "indexEventMinDiff": indexEventMinDiff,
@@ -87,52 +86,91 @@ class ECRY {
 
   Map<String, dynamic> findEventCreateYouInLunarCalendar(DateTime birthday, int randomIndex) {
     List<int> arrDayCounter = [];
-    DateTime fuckingDay = findFuckingDay(birthday, randomIndex);
-    Solar fuckingDaySolar = Solar(solarYear: fuckingDay.year, solarMonth: fuckingDay.month, solarDay: fuckingDay.day);
-    Lunar fuckingDayLunar = LunarSolarConverter.solarToLunar(fuckingDaySolar);
+    Lunar birthdayLunar = LunarSolarConverter.solarToLunar(Solar(solarYear: birthday.year, solarMonth: birthday.month, solarDay: birthday.day));
+    DateTime fuckDay = findFuckDay(birthday, randomIndex);
+    Solar fuckDaySolar = Solar(solarYear: fuckDay.year, solarMonth: fuckDay.month, solarDay: fuckDay.day);
+    Lunar fuckDayLunar = LunarSolarConverter.solarToLunar(fuckDaySolar);
     for (var event in EVENTS[typeCalendar.lunar]) {
       List<String> strEvent = event[0].split("/");
       int day = int.parse(strEvent[0]), month = int.parse(strEvent[1]);
-      DateTime eventFuckingDay = convertLunarToSolar(Lunar(lunarYear: fuckingDay.year, lunarMonth: month, lunarDay: day));
-      int diff = fuckingDay.difference(eventFuckingDay).inDays.abs();
+      DateTime eventFuckDay = convertLunarToSolar(Lunar(lunarYear: fuckDay.year, lunarMonth: month, lunarDay: day));
+      int diff = fuckDay.difference(eventFuckDay).inDays.abs();
       arrDayCounter.add(diff);
     }
     int minDiff = arrDayCounter.reduce(min);
     int indexEventMinDiff = arrDayCounter.indexWhere((quantity) => quantity == minDiff);
-    print('''
-      birthday: '${birthday.day}-${birthday.month}-${birthday.year}'
-      fuckDaySolar:'${fuckingDaySolar.solarDay}-${fuckingDaySolar.solarMonth}-${fuckingDaySolar.solarYear}'
-      fuckDayLunar: ${fuckingDayLunar.lunarDay}-${fuckingDayLunar.lunarMonth}-${fuckingDayLunar.lunarYear}'
-      $arrDayCounter
-      minDiff: $minDiff
-      Event Name: ${EVENTS[typeCalendar.lunar][indexEventMinDiff][1]}
-    ''');
+    // print('''
+    //   birthday: '${birthday.day}-${birthday.month}-${birthday.year}'
+    //   fuckDay: ${fuckDayLunar.lunarDay}-${fuckDayLunar.lunarMonth}-${fuckDayLunar.lunarYear}'
+    //   $arrDayCounter
+    //   minDiff: $minDiff
+    //   Event Name: ${EVENTS[typeCalendar.lunar][indexEventMinDiff][1]}
+    // ''');
     return {
-      "birthday": birthday,
-      "fuckDayLunar": fuckingDayLunar,
+      "birthday": birthdayLunar,
+      "fuckDay": fuckDayLunar,
       "arrDayCounter": arrDayCounter,
       "minDiff": minDiff,
       "indexEventMinDiff": indexEventMinDiff,
     };
   }
 
-  DateTime findFuckingDay(DateTime birthday, int randomIndex) {
+  DateTime findFuckDay(DateTime birthday, int randomIndex) {
     return birthday.subtract(Duration(days: NINE_MONTHS_TEN_DAYS[randomIndex]));
   }
 
   void findEventCreateYou(DateTime birthday) {
-    int randomIndex9Month10Day = Random().nextInt(3);
-    var solar = findEventCreateYouInSolarCalendar(birthday, randomIndex9Month10Day);
-    var lunar = findEventCreateYouInLunarCalendar(birthday, randomIndex9Month10Day);
-    if (solar["minDiff"] > lunar['minDiff'])
-      print(EVENTS[typeCalendar.lunar][lunar["indexEventMinDiff"]]);
-    else
-      print(EVENTS[typeCalendar.solar][solar["indexEventMinDiff"]]);
+    int randomIndex9Month10Day = Random().nextInt(1);
+    var solarEvent = findEventCreateYouInSolarCalendar(birthday, randomIndex9Month10Day);
+    var lunarEvent = findEventCreateYouInLunarCalendar(birthday, randomIndex9Month10Day);
+    calcResult(solarEvent, lunarEvent);
   }
 
   DateTime convertLunarToSolar(Lunar lunar) {
     Solar solar = LunarSolarConverter.lunarToSolar(lunar);
     return DateTime(solar.solarYear, solar.solarMonth, solar.solarDay);
+  }
+
+  dynamic calcResult(Map<String, dynamic> solarEvent, Map<String, dynamic> lunarEvent) {
+    DateTime birthday = solarEvent['birthday'];
+    Lunar birthdayLunar = lunarEvent['birthday'];
+    DateTime fuckDay = solarEvent['fuckDay'];
+    Lunar fuckDayLunar = lunarEvent['fuckDay'];
+    int indexEventMinDiff = solarEvent['indexEventMinDiff'];
+    int indexEventMinDiffLunar = lunarEvent['indexEventMinDiff'];
+    
+    var event;
+    if (solarEvent["minDiff"] > lunarEvent['minDiff'])
+      event = EVENTS[typeCalendar.lunar][lunarEvent["indexEventMinDiff"]];
+    else
+      event = EVENTS[typeCalendar.solar][lunarEvent["indexEventMinDiff"]];
+    print('''
+      birthday: '${birthday.day}-${birthday.month}-${birthday.year}'
+      birthdayLunar: ${birthdayLunar.lunarDay}-${birthdayLunar.lunarMonth}-${birthdayLunar.lunarYear}'
+      fuckDay: '${fuckDay.day}-${fuckDay.month}-${fuckDay.year}'
+      fuckDayLunar: ${fuckDayLunar.lunarDay}-${fuckDayLunar.lunarMonth}-${fuckDayLunar.lunarYear}'
+      Event: ${EVENTS[typeCalendar.solar][indexEventMinDiff]}
+      EventLunar: ${EVENTS[typeCalendar.lunar][indexEventMinDiffLunar]}
+      arrDayCounter: ${solarEvent['arrDayCounter']}
+      arrDayCounterLunar: ${lunarEvent['arrDayCounter']}
+      minDiff: ${solarEvent['minDiff']}
+      minDiffLunar: ${lunarEvent['minDiff']}
+      ===> Event Create You is : $event
+    ''');
+    var result = {
+      'birthday': '${birthday.day}-${birthday.month}-${birthday.year}',
+      'birthdayLunar': '${birthdayLunar.lunarDay}-${birthdayLunar.lunarMonth}-${birthdayLunar.lunarYear}',
+      'fuckDay': '${fuckDay.day}-${fuckDay.month}-${fuckDay.year}',
+      'fuckDayLunar': '${fuckDayLunar.lunarDay}-${fuckDayLunar.lunarMonth}-${fuckDayLunar.lunarYear}',
+      'arrDayCounter': '${solarEvent['arrDayCounter']}',
+      'arrDayCounterLunar': '${lunarEvent['arrDayCounter']}',
+      'minDiff': '${solarEvent['minDiff']}',
+      'minDiffLunar': '${lunarEvent['minDiff']}',
+      'Event': '${EVENTS[typeCalendar.solar][indexEventMinDiff]}',
+      'EventLunar': '${EVENTS[typeCalendar.lunar][indexEventMinDiffLunar]}',
+      'EventFinal': event
+    };
+    return result;
   }
 }
 
